@@ -4,7 +4,7 @@ import logging
 
 from discord.ext import commands
 from dotenv import load_dotenv
-from agent import MistralAgent
+from tomaba.agent import MistralAgent
 
 PREFIX = "!"
 
