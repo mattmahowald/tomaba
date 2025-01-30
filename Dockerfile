@@ -15,5 +15,8 @@ RUN pip install poetry && poetry install --no-interaction
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
-# Start the bot
+# Expose port 8080 for Cloud Run
+EXPOSE 8080
+
+# Start the bot with the FastAPI server
 CMD ["poetry", "run", "python", "tomaba/bot.py"]
