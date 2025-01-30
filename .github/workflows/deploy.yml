@@ -23,6 +23,12 @@ jobs:
         with:
           project_id: tomaba
 
+      - name: Ensure Correct Service Account is Used
+        run: |
+          gcloud auth list
+          gcloud config set account github-actions-deployer@tomaba.iam.gserviceaccount.com
+          gcloud auth list  # Verify change
+
       - name: Deploy to Cloud Run
         run: |
           gcloud builds submit --tag gcr.io/tomaba/tomaba
