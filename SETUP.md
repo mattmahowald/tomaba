@@ -130,3 +130,16 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com secretmanage
 gcloud auth login
 gcloud auth application-default login
 ```
+
+### 6. After making some changes, deploy to GCP using the following command
+
+```bash
+gcloud builds submit --tag gcr.io/tomaba/tomaba
+gcloud run deploy tomaba-bot \
+ --image gcr.io/tomaba/tomaba \
+ --platform managed \
+ --region us-central1 \
+ --allow-unauthenticated \
+ --set-secrets DISCORD_TOKEN=DISCORD_TOKEN:latest,MISTRAL_API_KEY=MISTRAL_API_KEY:latest
+
+```
