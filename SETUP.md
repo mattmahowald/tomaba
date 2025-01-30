@@ -106,3 +106,27 @@ poetry run python tomaba/test.py
 ```
 
 This will execute the test.py script located in the tomaba directory using Poetry's managed environment.
+
+## 5. Setup GCloud
+
+Once you are a part of the gcloud project, make sure to login to gcloud form your terminal:
+
+If gcloud and/or homebrew are not installed:
+
+```bash
+# install homebrew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# install gcloud command line interface
+brew install --cask google-cloud-sdk
+
+# sign into gcloud:
+gcloud init
+```
+
+```bash
+gcloud config set project tomaba
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com secretmanager.googleapis.com
+gcloud auth login
+gcloud auth application-default login
+```

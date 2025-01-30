@@ -48,6 +48,11 @@ async def on_message(message: discord.Message):
     # Don't delete this line! It's necessary for the bot to process commands.
     await bot.process_commands(message)
 
+    if message.channel.name != "tomaba":
+        return
+
+    breakpoint()
+
     # Ignore messages from self or other bots to prevent infinite loops.
     if message.author.bot or message.content.startswith("!"):
         return
