@@ -6,6 +6,26 @@
 
 Create a file called `.env` at `tomaba/.env`. Get the required variables from Matt.
 
+### 2. Install PyEnv and Python 3.13
+
+Following assumes MacOS. See github for latest instructions (https://github.com/pyenv/pyenv?tab=readme-ov-file#b-set-up-your-shell-environment-for-pyenv).
+
+```bash
+brew update
+brew install pyenv
+
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zshrc
+echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.zshrc
+echo 'eval "$(pyenv init - zsh)"' >> ~/.zshrc
+
+exec "$SHELL"
+
+pyenv install 3.13
+pyenv global 3.13
+```
+
+
+
 ### 3. Install poetry
 
 ```bash
