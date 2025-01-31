@@ -1,9 +1,16 @@
+import json
 import os
-from mistralai import Mistral
-import discord
+from typing import Dict
+from mistralai import Any, Mistral, ChatCompletionResponse
+
+from tomaba.models.recipe import Recipe
+from tomaba.prompt import CREATE_RECIPE_SYSTEM_PROMPT
+
+import logging
+
+logger = logging.getLogger("agent")
 
 MISTRAL_MODEL = "mistral-large-latest"
-SYSTEM_PROMPT = "You are a helpful assistant."
 
 
 class MistralAgent:
@@ -12,13 +19,19 @@ class MistralAgent:
 
         self.client = Mistral(api_key=MISTRAL_API_KEY)
 
-    async def run(self, message: discord.Message):
-        # The simplest form of an agent
-        # Send the message's content to Mistral's API and return Mistral's response
+    def response_to_json(self, response: ChatCompletionResponse) -> Dict[str, Any]:
+        try:
+            content = response.choices[0].message.content
+            json_str = content.split("```json")[1].split("```")[0].strip()
+            return json.loads(json_str)
+        except (json.JSONDecodeError, IndexError, AttributeError):
+            raise ValueError("Failed to parse response as JSON")
+
+    async def create_recipe(self, message: str) -> Dict[str, Any]:
 
         messages = [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": message.content},
+            {"role": "system", "content": CREATE_RECIPE_SYSTEM_PROMPT},
+            {"role": "user", "content": message},
         ]
 
         response = await self.client.chat.complete_async(
@@ -26,4 +39,6 @@ class MistralAgent:
             messages=messages,
         )
 
-        return response.choices[0].message.content
+        logger.info(f"Response: {response.choices[0].message.content}")
+
+        return self.response_to_json(response)
