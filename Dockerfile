@@ -1,22 +1,41 @@
-# Use an official Python runtime as a parent image
-FROM python:3.13
+# Use a lightweight Python base image
+FROM python:3.13-slim
 
-# Set the working directory
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    POETRY_VIRTUALENVS_CREATE=false \
+    PYTHONPATH=/app
+
+# Set a dedicated user (security best practice)
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+
+# Set working directory
 WORKDIR /app
 
-# Copy the project files
+# Install system dependencies required for Poetry
+RUN apt-get update && apt-get install -y curl gcc g++ && rm -rf /var/lib/apt/lists/*
+
+# Install Poetry
+RUN pip install --no-cache-dir poetry
+
+# Copy dependency files first (ensures caching)
 COPY pyproject.toml poetry.lock ./
+
+# Install only production dependencies
+RUN poetry install --no-interaction --no-ansi --no-root
+
+# Copy remaining source files
 COPY tomaba ./tomaba
 COPY README.md ./
 
-# Install Poetry and dependencies
-RUN pip install poetry && poetry install --no-interaction
+# Change ownership to non-root user
+RUN chown -R appuser:appgroup /app
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
+# Switch to non-root user
+USER appuser
 
-# Expose port 8080 for Cloud Run
+# Expose the server port
 EXPOSE 8080
 
-# Start the bot with the FastAPI server
-CMD ["poetry", "run", "python", "tomaba/bot.py"]
+# Start the bot & FastAPI server
+CMD ["poetry", "run", "python", "tomaba/run.py"]

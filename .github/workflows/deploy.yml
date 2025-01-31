@@ -25,7 +25,7 @@ jobs:
 
       - name: Deploy to Cloud Run
         run: |
-          gcloud builds submit --tag gcr.io/tomaba/tomaba --account=github-actions-deployer@tomaba.iam.gserviceaccount.com
+          gcloud builds submit --tag gcr.io/tomaba/tomaba
           gcloud run deploy tomaba-bot \
             --image gcr.io/tomaba/tomaba \
             --region us-central1 \
