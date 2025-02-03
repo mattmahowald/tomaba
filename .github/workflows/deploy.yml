@@ -28,6 +28,6 @@ jobs:
           gcloud builds submit --tag gcr.io/tomaba/tomaba
           gcloud run deploy tomaba-bot \
             --image gcr.io/tomaba/tomaba \
-            --region us-central1 \
+            --region us-west1 \
             --platform managed \
             --allow-unauthenticated
