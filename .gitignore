@@ -22,7 +22,7 @@ tomaba-frontend/out/
 
 # Secrets
 .env
-
+.env.local
 # VS Code settings
 .vscode/
 
