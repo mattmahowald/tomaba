@@ -13,7 +13,7 @@ from models.recipe import Recipe, RecipeSummary
 load_dotenv()
 
 PREFIX = "!"
-SERVER_URL = "http://localhost:8000/chat"
+SERVER_URL = "http://localhost:8080/chat"
 
 # Setup logging
 logger = logging.getLogger("discord")
