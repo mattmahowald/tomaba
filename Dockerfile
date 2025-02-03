@@ -35,7 +35,7 @@ RUN chown -R appuser:appgroup /app
 USER appuser
 
 # Expose the server port
-EXPOSE 8080
+EXPOSE 8000
 
 # Start the bot & FastAPI server
 CMD ["poetry", "run", "python", "tomaba/run.py"]

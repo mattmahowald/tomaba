@@ -127,7 +127,9 @@ poetry run python tomaba/test.py
 
 This will execute the test.py script located in the tomaba directory using Poetry's managed environment.
 
-## 5. Setup GCloud
+## 5. Setup GCloud (optional)
+
+### Note: changes should autodeploy when merging a pull request in to the main github branch
 
 Once you are a part of the gcloud project, make sure to login to gcloud form your terminal:
 
@@ -151,7 +153,7 @@ gcloud auth login
 gcloud auth application-default login
 ```
 
-### 6. After making some changes, deploy to GCP using the following command
+### 6. After making some changes, deploy to GCP using the following command (optional)
 
 ```bash
 gcloud builds submit --tag gcr.io/tomaba/tomaba
