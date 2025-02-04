@@ -5,8 +5,8 @@ import signal
 import sys
 import os
 
-from tomaba.bot import DiscordBot
-from tomaba.server import app
+from bot import DiscordBot
+from server import app
 
 logging.basicConfig(level=logging.INFO)
 

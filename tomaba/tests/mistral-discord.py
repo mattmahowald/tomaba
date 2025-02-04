@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 import discord
 import asyncio
 
-from tomaba.agent import MistralAgent
-from tomaba.models.recipe import Recipe, RecipeSummary
+from agent import MistralAgent
+from server import Recipe
 
 # Load environment variables from .env
 load_dotenv()

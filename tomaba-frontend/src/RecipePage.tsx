@@ -1,4 +1,12 @@
-import { Box, Heading, SimpleGrid, Spinner, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Heading,
+  SimpleGrid,
+  Spinner,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -40,40 +48,108 @@ function RecipePage() {
       });
   }, [id]);
 
-  if (loading) return <Spinner size="xl" />;
-  if (error) return <Text color="red.500">{error}</Text>;
+  if (loading) return <Spinner size="xl" mt={10} />;
+  if (error)
+    return (
+      <Text color="red.500" mt={4}>
+        {error}
+      </Text>
+    );
   if (!recipe) return null;
 
   return (
-    <Box>
-      <Heading as="h2" size="xl" mb={4}>
+    <Box
+      maxW="800px"
+      mx="auto"
+      p={6}
+      bg="white"
+      boxShadow="lg"
+      borderRadius="lg"
+    >
+      {/* Recipe Name */}
+      <Heading as="h2" size="xl" mb={4} textAlign="center">
         {recipe.name}
       </Heading>
-      <Text fontSize="lg" fontStyle="italic">
+
+      {/* Recipe Summary */}
+      <Text
+        fontSize="lg"
+        fontStyle="italic"
+        textAlign="center"
+        mb={6}
+        color="gray.600"
+      >
         {recipe.summary}
       </Text>
-      <SimpleGrid columns={2} gap={10} mt={4}>
-        <Box>
-          <Heading as="h3" size="md">
-            Ingredients
-          </Heading>
-          {Object.entries(recipe.ingredients).map(([name, details]) => (
-            <Text key={name}>
-              {name}: {details.quantity} {details.unit}
-            </Text>
-          ))}
-        </Box>
-        <Box>
-          <Heading as="h3" size="md">
-            Steps
-          </Heading>
-          {recipe.steps.map((step, index) => (
-            <Text key={index}>
-              {index + 1}. {step}
-            </Text>
-          ))}
-        </Box>
+
+      {/* Recipe Info Grid */}
+      <SimpleGrid columns={2} gap={6} mb={6}>
+        <Text>
+          <strong>Cuisine:</strong> {recipe.cuisine}
+        </Text>
+        <Text>
+          <strong>Difficulty:</strong> {recipe.difficulty}
+        </Text>
+        <Text>
+          <strong>Prep Time:</strong> {recipe.prep_time} mins
+        </Text>
+        <Text>
+          <strong>Cook Time:</strong> {recipe.cook_time} mins
+        </Text>
+        <Text>
+          <strong>Servings:</strong> {recipe.servings}
+        </Text>
       </SimpleGrid>
+
+      {/* <Divider my={6} /> */}
+
+      {/* Ingredients Section */}
+      <Box mb={6}>
+        <Heading as="h3" size="md" mb={3}>
+          Ingredients
+        </Heading>
+        <VStack align="start" gap={2}>
+          {Object.entries(recipe.ingredients).map(([name, details]) => (
+            <Flex
+              key={name}
+              w="100%"
+              justify="space-between"
+              bg="gray.50"
+              p={3}
+              borderRadius="md"
+            >
+              <Text fontWeight="medium">{name}</Text>
+              <Text>
+                {details.quantity} {details.unit}
+              </Text>
+            </Flex>
+          ))}
+        </VStack>
+      </Box>
+
+      {/* <Divider my={6} /> */}
+
+      {/* Steps Section */}
+      <Box>
+        <Heading as="h3" size="md" mb={3}>
+          Instructions
+        </Heading>
+        <VStack gap={4} align="stretch">
+          {recipe.steps.map((step, index) => (
+            <Box
+              key={index}
+              bg="gray.50"
+              boxShadow="sm"
+              p={4}
+              borderRadius="md"
+            >
+              <Text>
+                <strong>Step {index + 1}:</strong> {step}
+              </Text>
+            </Box>
+          ))}
+        </VStack>
+      </Box>
     </Box>
   );
 }

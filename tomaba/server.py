@@ -7,7 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import firestore
 import os
 from dotenv import load_dotenv
-from tomaba.agent import MistralAgent
+
+from agent import MistralAgent
 
 # Check if running locally (Cloud Run sets ENVIRONMENT to "production" by default)
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
@@ -45,6 +46,10 @@ db = firestore.Client()
 
 # Load AI agent
 agent = MistralAgent()
+
+
+class CreateRecipeRequest(BaseModel):
+    prompt: str
 
 
 class MessageRequest(BaseModel):
@@ -125,6 +130,31 @@ def get_recipe(id: str):
 
     except Exception as e:
         logger.error(f"Error fetching recipe {id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.post("/recipe/create", response_model=dict)
+async def create_recipe_from_prompt(request: CreateRecipeRequest):
+    """Creates a recipe from user input and stores it in Firestore."""
+    logger.info(f"Generating recipe for prompt: {request.prompt}")
+
+    try:
+        # Generate recipe using the AI agent
+        generated_recipe = await agent.create_recipe(request.prompt)
+
+        # Ensure recipe follows the correct schema
+        recipe_data = Recipe(**generated_recipe).model_dump()
+
+        # Store in Firestore
+        doc_ref = db.collection("recipe").add(recipe_data)
+        recipe_id = doc_ref[1].id
+
+        logger.info(f"Recipe created successfully with ID: {recipe_id}")
+
+        return {"message": "Recipe created successfully", "recipe_id": recipe_id}
+
+    except Exception as e:
+        logger.error(f"Error creating recipe from prompt: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 

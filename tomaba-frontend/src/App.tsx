@@ -1,35 +1,25 @@
-import { Box, Heading, IconButton } from "@chakra-ui/react";
-import { FaHome } from "react-icons/fa"; // Import Home icon
-
-import { Link, Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { Box } from "@chakra-ui/react";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import AppBar from "./AppBar.tsx";
+import CreatePage from "./CreatePage.tsx";
 import RecipeList from "./RecipeList.tsx";
 import RecipePage from "./RecipePage.tsx";
 
 function App() {
   return (
     <Router>
-      <Box maxW="800px" mx="auto" p={4}>
-        {/* Home Icon */}
-        <Link to="/">
-          <IconButton
-            aria-label="Home"
-            size="lg"
-            variant="ghost"
-            color="blue.500"
-            _hover={{ bg: "gray.200" }}
-          >
-            <FaHome />
-          </IconButton>
-        </Link>
+      <Box minH="100vh" bg="gray.50">
+        {/* Add the App Bar */}
+        <AppBar />
 
-        <Heading as="h1" size="xl" mb={4} textAlign="center">
-          Tomaba
-        </Heading>
-
-        <Routes>
-          <Route path="/" element={<RecipeList />} />
-          <Route path="/recipe/:id" element={<RecipePage />} />
-        </Routes>
+        {/* Page Content */}
+        <Box maxW="800px" mx="auto" p={6}>
+          <Routes>
+            <Route path="/" element={<RecipeList />} />
+            <Route path="/recipe/:id" element={<RecipePage />} />
+            <Route path="/create" element={<CreatePage />} />
+          </Routes>
+        </Box>
       </Box>
     </Router>
   );
