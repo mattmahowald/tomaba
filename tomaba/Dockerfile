@@ -25,8 +25,7 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-interaction --no-ansi --no-root
 
 # Copy remaining source files
-COPY tomaba ./tomaba
-COPY README.md ./
+COPY . ./tomaba
 
 # Change ownership to non-root user
 RUN chown -R appuser:appgroup /app

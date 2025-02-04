@@ -3,8 +3,7 @@ import os
 from typing import Dict
 from mistralai import Any, Mistral, ChatCompletionResponse
 
-from tomaba.models.recipe import Recipe
-from tomaba.prompt import CREATE_RECIPE_SYSTEM_PROMPT
+from prompt import CREATE_RECIPE_SYSTEM_PROMPT
 
 import logging
 

@@ -6,26 +6,6 @@
 
 Create a file called `.env` at `tomaba/.env`. Get the required variables from Matt.
 
-### 2. Install PyEnv and Python 3.13
-
-Following assumes MacOS. See github for latest instructions (https://github.com/pyenv/pyenv?tab=readme-ov-file#b-set-up-your-shell-environment-for-pyenv).
-
-```bash
-brew update
-brew install pyenv
-
-echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zshrc
-echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.zshrc
-echo 'eval "$(pyenv init - zsh)"' >> ~/.zshrc
-
-exec "$SHELL"
-
-pyenv install 3.13
-pyenv global 3.13
-```
-
-
-
 ### 3. Install poetry
 
 ```bash
@@ -127,7 +107,9 @@ poetry run python tomaba/test.py
 
 This will execute the test.py script located in the tomaba directory using Poetry's managed environment.
 
-## 5. Setup GCloud
+## 5. Setup GCloud (optional)
+
+### Note: changes should autodeploy when merging a pull request in to the main github branch
 
 Once you are a part of the gcloud project, make sure to login to gcloud form your terminal:
 
@@ -151,14 +133,14 @@ gcloud auth login
 gcloud auth application-default login
 ```
 
-### 6. After making some changes, deploy to GCP using the following command
+### 6. After making some changes, deploy to GCP using the following command (optional)
 
 ```bash
 gcloud builds submit --tag gcr.io/tomaba/tomaba
 gcloud run deploy tomaba-bot \
  --image gcr.io/tomaba/tomaba \
  --platform managed \
- --region us-central1 \
+ --region us-west1 \
  --allow-unauthenticated \
  --set-secrets DISCORD_TOKEN=DISCORD_TOKEN:latest,MISTRAL_API_KEY=MISTRAL_API_KEY:latest
 
