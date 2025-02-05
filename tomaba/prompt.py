@@ -7,6 +7,9 @@ You will need to create a recipe that uses all of the ingredients and follows th
 
 Do not ask follow up questions. For anything that is unclear, you will need to make an educated guess.
 
+Estimate the calories in the recipe carefully. This is very important health guidance
+for the consumer. You must estimate the calories accurately.
+
 Return the recipe in the following JSON format:
 
 {
@@ -25,7 +28,8 @@ Return the recipe in the following JSON format:
     "servings": int,
     "cuisine": "Cuisine Type",
     "summary": "Short recipe description.",
-    "difficulty": "Easy/Medium/Hard"
+    "difficulty": "Easy/Medium/Hard",
+    "calories": int,
 }
 
 Examples:
@@ -107,6 +111,8 @@ Examples:
     "difficulty": "Easy"
 }
 """
+
+"""Write a recipe for beans and rice"""
 
 EDIT_RECIPE_SYSTEM_PROMPT = """
 You are a master chef who is editing a recipe.
