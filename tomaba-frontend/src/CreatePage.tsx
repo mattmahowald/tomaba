@@ -16,6 +16,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function CreatePage() {
   const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<string[]>([]); // Store chat history
   const [loading, setLoading] = useState(false);
   const toast = useToast();
   const navigate = useNavigate();
@@ -23,7 +24,11 @@ function CreatePage() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
+    // Add user message to chat history
+    setMessages((prev) => [...prev, input]);
+    setInput(""); // Clear input field
     setLoading(true);
+
     try {
       const response = await fetch(`${API_BASE_URL}/recipe/create`, {
         method: "POST",
@@ -76,6 +81,27 @@ function CreatePage() {
           Create a New Recipe
         </Text>
 
+        {/* Chat Display */}
+        <Box
+          flex="1"
+          p={4}
+          borderRadius="md"
+          bg="gray.100"
+          overflowY="auto"
+          minH="200px"
+        >
+          {messages.map((msg, index) => (
+            <Text key={index} fontSize="md" p={2} bg="white" borderRadius="md">
+              {msg}
+            </Text>
+          ))}
+          {loading && (
+            <Text fontSize="md" color="gray.500" mt={2}>
+              Creating recipe...
+            </Text>
+          )}
+        </Box>
+
         {/* Chat Input Box */}
         <Flex gap={2} mt="auto">
           <Input
@@ -84,6 +110,11 @@ function CreatePage() {
             onChange={(e) => setInput(e.target.value)}
             size="lg"
             borderRadius="full"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !loading && input.trim()) {
+                handleSend();
+              }
+            }}
           />
           <IconButton
             aria-label="Send"

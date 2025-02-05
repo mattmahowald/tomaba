@@ -36,9 +36,10 @@ function AppBar() {
           textAlign="center"
           flex="1"
         >
-          Tomaba
+          <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+            Tomaba
+          </Link>
         </Heading>
-
         {/* Right - Create Button */}
         <Link to="/create">
           <IconButton

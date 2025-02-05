@@ -174,22 +174,32 @@ def create_recipe(recipe: Recipe = Body(...)):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@app.get("/recipes", response_model=List[str])
-def list_recipe_ids():
-    """Retrieves a list of all recipe IDs from Firestore."""
-    logger.info("Fetching all recipe IDs")
+@app.get("/recipes", response_model=List[Dict[str, str]])
+def list_recipes():
+    """Retrieves a list of all recipes with their ID, name, and summary from Firestore."""
+    logger.info("Fetching all recipes with ID, name, and summary")
 
     try:
         # Query Firestore for all documents in the 'recipe' collection
         recipes = db.collection("recipe").stream()
 
-        # Extract only the document IDs
-        recipe_ids = [doc.id for doc in recipes]
+        # Extract the required fields
+        recipe_list = [
+            {
+                "id": doc.id,
+                "name": doc.to_dict().get("name", "Unnamed Recipe"),
+                "summary": doc.to_dict().get("summary", "No summary available"),
+                "difficulty": doc.to_dict().get("difficulty", "Unknown"),
+                "prep_time": str(doc.to_dict().get("prep_time", 0)),
+                "cook_time": str(doc.to_dict().get("cook_time", 0)),
+            }
+            for doc in recipes
+        ]
 
-        return recipe_ids
+        return recipe_list
 
     except Exception as e:
-        logger.error(f"Error fetching recipe IDs: {e}")
+        logger.error(f"Error fetching recipes: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
