@@ -55,6 +55,7 @@ class CreateRecipeRequest(BaseModel):
 class MessageRequest(BaseModel):
     author: str
     content: str
+    message_history: List[Dict[str, str]] = []  # List of previous messages with author and content
 
 
 class Ingredient(BaseModel):
@@ -98,20 +99,46 @@ def healthz():
 @app.post("/chat")
 async def chat(request: MessageRequest):
     """Processes incoming messages from the bot and returns a response."""
-    logging.info(f"Server processing message: {request}")
+    # Debug logging for the entire request
+    logging.info("=== New Chat Request ===")
+    logging.info(f"Content: {request.content}")
+    logging.info(f"Author: {request.author}")
+    logging.info(f"Message History Length: {len(request.message_history)}")
+    logging.info("Message History:")
+    for msg in request.message_history:
+        logging.info(f"  - Author: {msg['author']}, Content: {msg['content']}")
+    
+    # Format message history for the AI agent
+    conversation_context = ""
+    if request.message_history:
+        for msg in request.message_history:
+            author_prefix = "Bot: " if msg["author"].startswith("tomaba") else "User: "
+            conversation_context += f"{author_prefix}{msg['content']}\n"
+    
+    # Add current message
+    conversation_context += f"User: {request.content}"
+    
+    # Log the final conversation context
+    logging.info("=== Formatted Conversation Context ===")
+    logging.info(conversation_context)
 
-    # TODO: This is where we will do handling to determine what kind of message
-    # is being sent and then call the appropriate agent function
-
-    response = await agent.create_recipe(request.content)
-
-    logger.info(f"Response: {response}")
-
-    # TODO: Eventually, the response will be a recipe with a lot of information
-    # in JSON structure. We'll need to parse the message for what to send back
-    # to the Discord channel, as well as what to store in the database.
-
-    return {"response": response}
+    # First analyze the conversation
+    response = await agent.analyze_conversation(conversation_context)
+    
+    # Check if the response indicates we should generate a recipe
+    if isinstance(response, dict) and "message" in response:
+        message = response["message"].strip()
+        if message.startswith("generate a recipe for"):
+            # Extract the recipe name and generate it
+            recipe_name = message.replace("generate a recipe for", "").strip()
+            recipe_response = await agent.create_recipe(recipe_name)
+            return {"response": recipe_response, "type": "recipe"}
+        else:
+            # Return the regular conversation response
+            return {"response": message, "type": "text"}
+    else:
+        # Return any other type of response as is
+        return {"response": str(response), "type": "text"}
 
 
 @app.get("/recipe/{id}", response_model=Recipe)
@@ -139,7 +166,7 @@ async def create_recipe_from_prompt(request: CreateRecipeRequest):
     logger.info(f"Generating recipe for prompt: {request.prompt}")
 
     try:
-        # Generate recipe using the AI agent
+        
         generated_recipe = await agent.create_recipe(request.prompt)
 
         # Ensure recipe follows the correct schema
