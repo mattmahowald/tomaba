@@ -3,6 +3,7 @@ import discord
 import logging
 import asyncio
 import httpx
+from datetime import datetime, timedelta
 
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -37,67 +38,86 @@ class DiscordBot(commands.Bot):
         """Triggered when the bot successfully connects to Discord."""
         logger.info(f"{self.user} has connected to Discord!")
 
-    async def on_message(self, message: discord.Message):
-        """Forwards messages from the "tomaba" channel to the FastAPI server."""
-        if message.author.bot or message.content.startswith("!"):
-            return
-        if message.channel.name != "tomaba":
+    async def on_message(self, message):
+        """Handle incoming messages."""
+        if message.author == self.user:
             return
 
-        # TODO: get prior messages between the bot and the user
-        logger.info(f"Forwarding message from {message.author}: {message.content}")
-        await message.reply("Processing...")
+        try:
+            # Fetch message history from the channel
+            message_history = []
+            async for msg in message.channel.history(limit=3):  # Adjust limit as needed
+                # Skip messages older than the current conversation
+                if msg.created_at < message.created_at - timedelta(minutes=5):  # Adjust timeframe as needed
+                    break
+                # Add to history if it's from the bot or the current conversation
+                if msg.author == self.user or msg.author == message.author:
+                    message_history.insert(0, {
+                        "author": str(msg.author),
+                        "content": msg.content
+                    })
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                SERVER_URL,
-                json={"author": str(message.author), "content": message.content},
-                timeout=120,
-            )
+            # Get response from server
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    SERVER_URL,
+                    json={
+                        "author": str(message.author),
+                        "content": message.content,
+                        "message_history": message_history
+                    },
+                    timeout=120,
+                )
 
+            response_data = response.json()
 
-        if response.status_code == 200:
-            max_message_length = 2000
-            recipe = Recipe.from_json(response.json()["response"])
-            recipe_summary = RecipeSummary(recipe)
-            # Split the summary into parts of 1000 characters
-            summary_parts = [recipe_summary.summary[i:i+max_message_length] for i in range(0, len(recipe_summary.summary), max_message_length)]
-            # Send each part
-            for part in summary_parts:
-                await message.reply(part)
-
-            # Split ingredients into parts of 1000 characters
-            ingredients_parts = [recipe_summary.ingredients[i:i+max_message_length] for i in range(0, len(recipe_summary.ingredients), 1000)]
-            # Send each part
-            for part in ingredients_parts:
-                await message.reply(part)
-
-            # Split steps into parts that don't exceed max message length
-            current_part = ""
-            steps_parts = []
-            
-            for step in recipe_summary.steps.split('\n'):
-                # If adding this step would exceed max length, start new part
-                if len(current_part + step + '\n') > max_message_length:
-                    steps_parts.append(current_part)
-                    current_part = step + '\n'
-                else:
-                    current_part += step + '\n'
-            
-            # Add final part if not empty
-            if current_part:
-                steps_parts.append(current_part)
+            # Check response type and handle accordingly
+            if response_data["type"] == "recipe" and isinstance(response_data["response"], dict):
+                max_message_length = 2000
+                recipe = Recipe.from_json(response_data["response"])
+                recipe_summary = RecipeSummary(recipe)
                 
-            # Send each part
-            for part in steps_parts:
-                await message.reply(part)
-            return
+                # Send summary in parts 
+                # TODO: should put this entire splitting in parts in a separate function
+                summary_parts = [recipe_summary.summary[i:i+max_message_length] 
+                               for i in range(0, len(recipe_summary.summary), max_message_length)]
+                for part in summary_parts:
+                    await message.reply(part)
 
-            # await message.reply(recipe_summary.summary)
-            # await message.reply(recipe_summary.ingredients)
-            # await message.reply(recipe_summary.steps)
-        else:
-            await message.reply("Error processing message.")
+                # Send ingredients in parts
+                ingredients_parts = [recipe_summary.ingredients[i:i+max_message_length] 
+                                  for i in range(0, len(recipe_summary.ingredients), max_message_length)]
+                for part in ingredients_parts:
+                    await message.reply(part)
+
+                # Split steps into parts that don't exceed max message length
+                current_part = ""
+                steps_parts = []
+                
+                for step in recipe_summary.steps.split('\n'):
+                    # If adding this step would exceed max length, start new part
+                    if len(current_part + step + '\n') > max_message_length:
+                        steps_parts.append(current_part)
+                        current_part = step + '\n'
+                    else:
+                        current_part += step + '\n'
+                
+                # Add final part if not empty
+                if current_part:
+                    steps_parts.append(current_part)
+                    
+                # Send each part of the steps
+                for part in steps_parts:
+                    await message.reply(part)
+            else:
+                # If it's just a text response, send it
+                await message.channel.send(response_data["response"])
+
+        except Exception as e:
+            logger.error(f"Error processing message: {e}")
+            if response_data and "response" in response_data:
+                logger.error(f"Response data content: {response_data['response']}")
+            await message.channel.send("Sorry, I encountered an error processing your request.")
 
     def run_bot(self):
         """Runs the bot asynchronously."""
